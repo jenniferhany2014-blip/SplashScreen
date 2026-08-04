@@ -18,6 +18,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.splashscreen.ui.theme.ZoonyBlack
+import com.example.splashscreen.ui.theme.ZoonyRed
+import com.example.splashscreen.ui.theme.ZoonyTextGray
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -25,7 +28,10 @@ fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.White
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -34,15 +40,32 @@ fun LoginScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // Swap R.drawable.my_logo for the uploaded Zoony Store logo asset
+            // (e.g. save it as res/drawable/zoony_logo.png / .xml)
             Image(
-                painter = painterResource(id = R.drawable.my_logo),
-                contentDescription = "App logo",
-                modifier = Modifier.size(120.dp).clip(CircleShape)
+                painter = painterResource(id = R.drawable.my_logo1),
+                contentDescription = "Zoony Store logo",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(text = "Welcome Back", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Zoony Store",
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                color = ZoonyBlack
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Welcome back — let's get shopping",
+                fontSize = 14.sp,
+                color = ZoonyTextGray
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -51,7 +74,12 @@ fun LoginScreen(navController: NavController) {
                 onValueChange = { username = it },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ZoonyRed,
+                    focusedLabelColor = ZoonyRed,
+                    cursorColor = ZoonyRed
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -62,7 +90,12 @@ fun LoginScreen(navController: NavController) {
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ZoonyRed,
+                    focusedLabelColor = ZoonyRed,
+                    cursorColor = ZoonyRed
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -75,16 +108,18 @@ fun LoginScreen(navController: NavController) {
                     }
                 },
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED)),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = ZoonyRed),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Text(text = "Login", fontSize = 16.sp)
+                Text(text = "Login", fontSize = 16.sp, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = { navController.navigate("signup") }) {
-                Text("Don't have an account? Sign up")
+                Text("Don't have an account? Sign up", color = ZoonyBlack)
             }
         }
     }

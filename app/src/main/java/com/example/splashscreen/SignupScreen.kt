@@ -14,6 +14,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.splashscreen.ui.theme.ZoonyBlack
+import com.example.splashscreen.ui.theme.ZoonyRed
+import com.example.splashscreen.ui.theme.ZoonyTextGray
 
 @Composable
 fun SignUpScreen(navController: NavController) {
@@ -22,7 +25,10 @@ fun SignUpScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = Color.White
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -31,7 +37,20 @@ fun SignUpScreen(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "Create Account", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Create Account",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = ZoonyBlack
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Join Zoony Store in seconds",
+                fontSize = 14.sp,
+                color = ZoonyTextGray
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -40,7 +59,12 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = { username = it },
                 label = { Text("Username") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ZoonyRed,
+                    focusedLabelColor = ZoonyRed,
+                    cursorColor = ZoonyRed
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -50,7 +74,12 @@ fun SignUpScreen(navController: NavController) {
                 onValueChange = { email = it },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ZoonyRed,
+                    focusedLabelColor = ZoonyRed,
+                    cursorColor = ZoonyRed
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -61,7 +90,12 @@ fun SignUpScreen(navController: NavController) {
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = PasswordVisualTransformation(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = ZoonyRed,
+                    focusedLabelColor = ZoonyRed,
+                    cursorColor = ZoonyRed
+                )
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -69,16 +103,18 @@ fun SignUpScreen(navController: NavController) {
             Button(
                 onClick = { Toast.makeText(context, "Account Created", Toast.LENGTH_SHORT).show() },
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED)),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = ZoonyRed),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Text(text = "Sign Up", fontSize = 16.sp)
+                Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = { navController.popBackStack() }) {
-                Text("Already have an account? Log in")
+                Text("Already have an account? Log in", color = ZoonyBlack)
             }
         }
     }
