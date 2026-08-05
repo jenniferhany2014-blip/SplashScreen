@@ -1,3 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SplashScreen</string>
+    <!-- Common / brand -->
+    <string name="app_name">Zoony Store</string>
+
+    <!-- Home screen: navigation drawer -->
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_profile">Profile</string>
+    <string name="cd_menu">Menu</string>
+
+    <!-- Login screen -->
+    <string name="cd_logo">Zoony Store logo</string>
+    <string name="login_subtitle">Welcome back — let\'s get shopping</string>
+    <string name="label_username">Username</string>
+    <string name="label_password">Password</string>
+    <string name="btn_login">Login</string>
+    <string name="msg_login_success">Login Successful</string>
+    <string name="prompt_signup">Don\'t have an account? Sign up</string>
+
+    <!-- Language switcher -->
+    <string name="cd_language_switch">Switch language</string>
 </resources>
+
