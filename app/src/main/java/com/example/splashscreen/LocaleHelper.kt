@@ -24,15 +24,19 @@ object LocaleHelper {
     }
 
     fun setLanguage(context: Context, language: String) {
+        // English is the default language. Arabic is only selected after
+        // the user explicitly presses the AR button.
+        val selectedLanguage = if (language == LANG_ARABIC) LANG_ARABIC else LANG_ENGLISH
+
         context.getSharedPreferences(
             PREFS_NAME,
             Context.MODE_PRIVATE
         )
             .edit()
-            .putString(KEY_LANGUAGE, language)
+            .putString(KEY_LANGUAGE, selectedLanguage)
             .apply()
 
-        applyLanguage(context, language)
+        applyLanguage(context, selectedLanguage)
 
         if (context is Activity) {
             context.recreate()

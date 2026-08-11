@@ -28,6 +28,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // Apply the user's saved language before Compose draws the UI.
+        LocaleHelper.applySavedLanguage(this)
+
         setContent {
             AppRoot()
         }

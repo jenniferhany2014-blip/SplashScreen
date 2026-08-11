@@ -1,3 +1,4 @@
+
 package com.example.splashscreen
 
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,7 +25,15 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(navController: NavController, viewModel: HomeViewModel = viewModel()) {
+fun Home(
+    navController: NavController,
+    viewModel: HomeViewModel = viewModel()
+) {
+    // Get Context here, inside the Composable.
+    // Then use this variable in the button instead of
+    // calling LocalContext.current inside onClick.
+    val context = LocalContext.current
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val selectedScreen = viewModel.selectedScreen
@@ -38,34 +48,78 @@ fun Home(navController: NavController, viewModel: HomeViewModel = viewModel()) {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
+
                 Spacer(Modifier.height(12.dp))
+
                 Text(
                     stringResource(R.string.app_name),
                     fontSize = 20.sp,
                     color = ZoonyRed,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(
+                        horizontal = 20.dp,
+                        vertical = 8.dp
+                    )
                 )
-                HorizontalDivider(Modifier.padding(vertical = 8.dp))
 
-                DrawerItem(DrawerScreen.HOME, selectedScreen, Icons.Default.Home, R.string.nav_home) {
-                    viewModel.selectScreen(DrawerScreen.HOME); scope.launch { drawerState.close() }
+                HorizontalDivider(
+                    Modifier.padding(vertical = 8.dp)
+                )
+
+                DrawerItem(
+                    screen = DrawerScreen.HOME,
+                    selectedScreen = selectedScreen,
+                    icon = Icons.Default.Home,
+                    labelRes = R.string.nav_home
+                ) {
+                    viewModel.selectScreen(DrawerScreen.HOME)
+                    scope.launch {
+                        drawerState.close()
+                    }
                 }
-                DrawerItem(DrawerScreen.PROFILE, selectedScreen, Icons.Default.Person, R.string.nav_profile) {
-                    viewModel.selectScreen(DrawerScreen.PROFILE); scope.launch { drawerState.close() }
+
+                DrawerItem(
+                    screen = DrawerScreen.PROFILE,
+                    selectedScreen = selectedScreen,
+                    icon = Icons.Default.Person,
+                    labelRes = R.string.nav_profile
+                ) {
+                    viewModel.selectScreen(DrawerScreen.PROFILE)
+                    scope.launch {
+                        drawerState.close()
+                    }
                 }
-                DrawerItem(DrawerScreen.SETTINGS, selectedScreen, Icons.Default.Settings, R.string.nav_settings) {
-                    viewModel.selectScreen(DrawerScreen.SETTINGS); scope.launch { drawerState.close() }
+
+                DrawerItem(
+                    screen = DrawerScreen.SETTINGS,
+                    selectedScreen = selectedScreen,
+                    icon = Icons.Default.Settings,
+                    labelRes = R.string.nav_settings
+                ) {
+                    viewModel.selectScreen(DrawerScreen.SETTINGS)
+                    scope.launch {
+                        drawerState.close()
+                    }
                 }
 
                 Spacer(Modifier.weight(1f))
+
                 NavigationDrawerItem(
-                    label = { Text(stringResource(R.string.nav_logout)) },
-                    icon = { Icon(Icons.Default.Logout, null) },
+                    label = {
+                        Text(stringResource(R.string.nav_logout))
+                    },
+                    icon = {
+                        Icon(
+                            Icons.Default.Logout,
+                            contentDescription = null
+                        )
+                    },
                     selected = false,
                     onClick = {
                         viewModel.logout {
                             navController.navigate("login") {
-                                popUpTo("home") { inclusive = true }
+                                popUpTo("home") {
+                                    inclusive = true
+                                }
                                 launchSingleTop = true
                             }
                         }
@@ -75,15 +129,60 @@ fun Home(navController: NavController, viewModel: HomeViewModel = viewModel()) {
             }
         }
     ) {
+
         Scaffold(
             topBar = {
+
                 TopAppBar(
-                    title = { Text(title) },
+
+                    title = {
+                        Text(title)
+                    },
+
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, stringResource(R.string.cd_menu))
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    drawerState.open()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = stringResource(
+                                    R.string.cd_menu
+                                )
+                            )
                         }
                     },
+
+                    actions = {
+
+                        // AR / EN language button
+                        TextButton(
+                            onClick = {
+                                LocaleHelper.toggleLanguage(context)
+                            }
+                        ) {
+                            Text(
+                                text =
+                                    if (
+                                        LocaleHelper.currentLanguage(context) ==
+                                        LocaleHelper.LANG_ARABIC
+                                    ) {
+                                        stringResource(
+                                            R.string.language_switch_en
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.language_switch_ar
+                                        )
+                                    },
+                                color = Color.White
+                            )
+                        }
+                    },
+
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = ZoonyRed,
                         titleContentColor = Color.White,
@@ -92,23 +191,35 @@ fun Home(navController: NavController, viewModel: HomeViewModel = viewModel()) {
                     )
                 )
             }
+
         ) { padding ->
+
             when (selectedScreen) {
+
                 DrawerScreen.HOME -> ProductListScreen(
                     navController = navController,
-                    modifier = Modifier.fillMaxSize().padding(padding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
                     showTopBar = false
                 )
+
                 DrawerScreen.PROFILE -> Profile(
-                    modifier = Modifier.fillMaxSize().padding(padding)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
                 )
+
                 DrawerScreen.SETTINGS -> Settings(
-                    modifier = Modifier.fillMaxSize().padding(padding)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
                 )
             }
         }
     }
 }
+
 
 @Composable
 private fun DrawerItem(
@@ -119,8 +230,15 @@ private fun DrawerItem(
     onClick: () -> Unit
 ) {
     NavigationDrawerItem(
-        label = { Text(stringResource(labelRes)) },
-        icon = { Icon(icon, null) },
+        label = {
+            Text(stringResource(labelRes))
+        },
+        icon = {
+            Icon(
+                icon,
+                contentDescription = null
+            )
+        },
         selected = selectedScreen == screen,
         colors = NavigationDrawerItemDefaults.colors(
             selectedContainerColor = ZoonyRed.copy(alpha = 0.12f),
