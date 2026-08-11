@@ -34,49 +34,124 @@ fun ProductListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(initialQuery) {
-        if (initialQuery.isNotBlank()) viewModel.search(initialQuery) else viewModel.fetchProducts()
+        if (initialQuery.isNotBlank()) {
+            viewModel.search(initialQuery)
+        } else {
+            viewModel.fetchProducts()
+        }
     }
 
     val content: @Composable (PaddingValues) -> Unit = { padding ->
-        Box(modifier = modifier.fillMaxSize().padding(padding)) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             when (val state = uiState) {
-                ProductListUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                ProductListUiState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
                 is ProductListUiState.Error -> {
                     Column(
-                        Modifier.align(Alignment.Center).padding(24.dp),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(stringResource(R.string.products_error))
+
                         Spacer(Modifier.height(8.dp))
-                        Text(state.message, fontSize = 13.sp)
+
+                        Text(
+                            text = state.message,
+                            fontSize = 13.sp
+                        )
+
                         Spacer(Modifier.height(16.dp))
-                        Button(onClick = { viewModel.fetchProducts() }) { Text(stringResource(R.string.retry)) }
+
+                        Button(
+                            onClick = {
+                                if (initialQuery.isNotBlank()) {
+                                    viewModel.search(initialQuery)
+                                } else {
+                                    viewModel.fetchProducts()
+                                }
+                            }
+                        ) {
+                            Text(stringResource(R.string.retry))
+                        }
                     }
                 }
+
                 is ProductListUiState.Success -> {
                     LazyColumn(
-                        Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(state.products, key = { it.id }) { product ->
-                            Card(modifier = Modifier.fillMaxWidth(), onClick = { navController.navigate("detail/${product.id}") }) {
-                                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        items(
+                            items = state.products,
+                            key = { it.id }
+                        ) { product ->
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    // IMPORTANT:
+                                    // This route must exactly match the
+                                    // route declared in MainActivity.
+                                    navController.navigate(
+                                        "product_detail/${product.id}"
+                                    )
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     AsyncImage(
                                         model = product.thumbnail,
                                         contentDescription = product.title,
                                         contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(72.dp).clip(RoundedCornerShape(8.dp))
+                                        modifier = Modifier
+                                            .size(72.dp)
+                                            .clip(RoundedCornerShape(8.dp))
                                     )
+
                                     Spacer(Modifier.width(12.dp))
-                                    Column(Modifier.weight(1f)) {
-                                        Text(product.title, fontSize = 16.sp)
+
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = product.title,
+                                            fontSize = 16.sp
+                                        )
+
                                         Spacer(Modifier.height(4.dp))
-                                        Text(product.category, fontSize = 13.sp)
+
+                                        Text(
+                                            text = product.category,
+                                            fontSize = 13.sp
+                                        )
+
                                         Spacer(Modifier.height(4.dp))
-                                        Text("$${product.price}", fontSize = 13.sp)
+
+                                        Text(
+                                            text = "$${product.price}",
+                                            fontSize = 13.sp
+                                        )
                                     }
-                                    Text("★ ${product.rating}", fontSize = 13.sp)
+
+                                    Text(
+                                        text = "★ ${product.rating}",
+                                        fontSize = 13.sp
+                                    )
                                 }
                             }
                         }
@@ -87,7 +162,17 @@ fun ProductListScreen(
     }
 
     if (showTopBar) {
-        Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.products_title)) }) }) { padding -> content(padding) }
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(stringResource(R.string.products_title))
+                    }
+                )
+            }
+        ) { padding ->
+            content(padding)
+        }
     } else {
         content(PaddingValues(0.dp))
     }
