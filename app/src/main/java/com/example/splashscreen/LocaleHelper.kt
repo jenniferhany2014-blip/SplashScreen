@@ -1,42 +1,80 @@
 package com.example.splashscreen
 
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
+import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
+import java.util.Locale
 
-/**
- * Central place for reading/writing the app's per-app language.
- * Uses the AndroidX per-app language API (appcompat 1.6.0+), which
- * works with plain ComponentActivity — no need to extend AppCompatActivity.
- *
- * Requires in AndroidManifest.xml (inside <application>):
- *   <meta-data
- *       android:name="autoStoreLocales"
- *       android:value="true" />
- *
- * Requires in build.gradle(.kts):
- *   implementation("androidx.appcompat:appcompat:1.7.0")
- */
 object LocaleHelper {
 
     const val LANG_ENGLISH = "en"
     const val LANG_ARABIC = "ar"
 
-    /** Returns "en" or "ar" — defaults to "en" if no override is set (system default). */
-    fun currentLanguage(): String {
-        val locales = AppCompatDelegate.getApplicationLocales()
-        return if (!locales.isEmpty) locales[0]?.language ?: LANG_ENGLISH else LANG_ENGLISH
-    }
+    private const val PREFS_NAME = "zoony_language"
+    private const val KEY_LANGUAGE = "language"
 
-    /** Applies the given language code app-wide. The current Activity recreates automatically. */
-    fun setLanguage(languageCode: String) {
-        AppCompatDelegate.setApplicationLocales(
-            LocaleListCompat.forLanguageTags(languageCode)
+    fun currentLanguage(context: Context): String {
+        val prefs = context.getSharedPreferences(
+            PREFS_NAME,
+            Context.MODE_PRIVATE
         )
+
+        return prefs.getString(KEY_LANGUAGE, LANG_ENGLISH)
+            ?: LANG_ENGLISH
     }
 
-    /** Toggles between English and Arabic. */
-    fun toggleLanguage() {
-        val next = if (currentLanguage() == LANG_ARABIC) LANG_ENGLISH else LANG_ARABIC
-        setLanguage(next)
+    fun setLanguage(context: Context, language: String) {
+        context.getSharedPreferences(
+            PREFS_NAME,
+            Context.MODE_PRIVATE
+        )
+            .edit()
+            .putString(KEY_LANGUAGE, language)
+            .apply()
+
+        applyLanguage(context, language)
+
+        if (context is Activity) {
+            context.recreate()
+        }
+    }
+
+    fun toggleLanguage(context: Context) {
+        val current = currentLanguage(context)
+
+        val newLanguage =
+            if (current == LANG_ARABIC) {
+                LANG_ENGLISH
+            } else {
+                LANG_ARABIC
+            }
+
+        setLanguage(context, newLanguage)
+    }
+
+    fun applySavedLanguage(context: Context) {
+        val language = currentLanguage(context)
+        applyLanguage(context, language)
+    }
+
+    private fun applyLanguage(
+        context: Context,
+        language: String
+    ) {
+        val locale = Locale(language)
+
+        Locale.setDefault(locale)
+
+        val configuration = Configuration(
+            context.resources.configuration
+        )
+
+        configuration.setLocale(locale)
+        configuration.setLayoutDirection(locale)
+
+        context.resources.updateConfiguration(
+            configuration,
+            context.resources.displayMetrics
+        )
     }
 }

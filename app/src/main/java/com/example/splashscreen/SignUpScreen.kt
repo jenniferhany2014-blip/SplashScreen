@@ -14,16 +14,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.splashscreen.ui.components.ZoonyLogo
-import com.example.splashscreen.ui.components.ZoonyPrimaryButton
 import com.example.splashscreen.ui.components.ZoonyTextField
 import com.example.splashscreen.ui.theme.ZoonyBlack
 import com.example.splashscreen.ui.theme.ZoonyRed
 import com.example.splashscreen.ui.theme.ZoonyTextGray
-import com.example.splashscreen.viewmodel.LoginViewModel
+import com.example.splashscreen.viewmodel.SignUpViewModel
 
 @Composable
-fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
+fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = viewModel()) {
     val context = LocalContext.current
     var showValidation by remember { mutableStateOf(false) }
 
@@ -33,60 +31,58 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            ZoonyLogo(contentDescription = stringResource(R.string.cd_logo))
-            Spacer(Modifier.height(24.dp))
-            Text(stringResource(R.string.app_name), fontSize = 30.sp, fontWeight = FontWeight.Bold, color = ZoonyBlack)
+            Text(stringResource(R.string.signup_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = ZoonyBlack)
             Spacer(Modifier.height(4.dp))
-            Text(stringResource(R.string.login_subtitle), fontSize = 14.sp, color = ZoonyTextGray)
-            Spacer(Modifier.height(32.dp))
+            Text(stringResource(R.string.signup_subtitle), fontSize = 14.sp, color = ZoonyTextGray)
+            Spacer(Modifier.height(24.dp))
 
-            ZoonyTextField(
-                value = viewModel.email,
-                onValueChange = { viewModel.onEmailChange(it); showValidation = false },
-                label = stringResource(R.string.label_email)
-            )
-            Spacer(Modifier.height(16.dp))
-            ZoonyTextField(
-                value = viewModel.password,
-                onValueChange = { viewModel.onPasswordChange(it); showValidation = false },
-                label = stringResource(R.string.label_password),
-                isPassword = true
-            )
+            ZoonyTextField(viewModel.name, { viewModel.onNameChange(it); showValidation = false }, stringResource(R.string.label_name))
+            Spacer(Modifier.height(12.dp))
+            ZoonyTextField(viewModel.email, { viewModel.onEmailChange(it); showValidation = false }, stringResource(R.string.label_email))
+            Spacer(Modifier.height(12.dp))
+            ZoonyTextField(viewModel.password, { viewModel.onPasswordChange(it); showValidation = false }, stringResource(R.string.label_password), isPassword = true)
+            Spacer(Modifier.height(12.dp))
+            ZoonyTextField(viewModel.confirmPassword, { viewModel.onConfirmPasswordChange(it); showValidation = false }, stringResource(R.string.label_confirm_password), isPassword = true)
 
             if (showValidation && viewModel.errorMessage.isNotBlank()) {
                 Spacer(Modifier.height(8.dp))
                 Text(viewModel.errorMessage, color = ZoonyRed, fontSize = 13.sp)
             }
 
-            if (showValidation && viewModel.password.isNotEmpty() && !viewModel.isPasswordValid) {
+            if (showValidation) {
                 Spacer(Modifier.height(8.dp))
                 PasswordRequirements(viewModel)
             }
 
-            Spacer(Modifier.height(24.dp))
-            ZoonyPrimaryButton(
-                text = if (viewModel.isLoading) stringResource(R.string.loading) else stringResource(R.string.btn_login),
+            Spacer(Modifier.height(20.dp))
+            Button(
+                enabled = !viewModel.isLoading,
                 onClick = {
                     showValidation = true
-                    viewModel.login {
-                        Toast.makeText(context, R.string.msg_login_success, Toast.LENGTH_SHORT).show()
+                    viewModel.signUp {
+                        Toast.makeText(context, R.string.msg_signup_success, Toast.LENGTH_SHORT).show()
                         navController.navigate("home") {
-                            popUpTo("login") { inclusive = true }
+                            popUpTo("signup") { inclusive = true }
                             launchSingleTop = true
                         }
                     }
-                }
-            )
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = ZoonyRed),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text(if (viewModel.isLoading) stringResource(R.string.loading) else stringResource(R.string.btn_signup), color = Color.White)
+            }
+
             Spacer(Modifier.height(8.dp))
-            TextButton(onClick = { navController.navigate("signup") }) {
-                Text(stringResource(R.string.prompt_signup), color = ZoonyBlack)
+            TextButton(onClick = { navController.popBackStack() }) {
+                Text(stringResource(R.string.prompt_login), color = ZoonyBlack)
             }
         }
     }
 }
 
 @Composable
-private fun PasswordRequirements(viewModel: LoginViewModel) {
+private fun PasswordRequirements(viewModel: SignUpViewModel) {
     Column(Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.password_requirements_title), color = ZoonyBlack, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         RequirementRow(viewModel.hasMinLength, stringResource(R.string.password_min_length))
@@ -94,6 +90,7 @@ private fun PasswordRequirements(viewModel: LoginViewModel) {
         RequirementRow(viewModel.hasLowerCase, stringResource(R.string.password_lowercase))
         RequirementRow(viewModel.hasDigit, stringResource(R.string.password_digit))
         RequirementRow(viewModel.hasSpecialChar, stringResource(R.string.password_special))
+        RequirementRow(viewModel.passwordsMatch, stringResource(R.string.password_match))
     }
 }
 

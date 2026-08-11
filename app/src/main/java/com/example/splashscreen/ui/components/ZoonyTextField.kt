@@ -10,17 +10,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.splashscreen.ui.theme.ZoonyRed
 
-/**
- * Branded OutlinedTextField used across auth screens (Login, Sign-Up).
- * Set [isPassword] = true to mask input.
- */
 @Composable
 fun ZoonyTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    isPassword: Boolean = false
+    isPassword: Boolean = false,
+    isError: Boolean = false,
+    supportingText: String? = null
 ) {
     OutlinedTextField(
         value = value,
@@ -28,7 +26,13 @@ fun ZoonyTextField(
         label = { Text(label) },
         modifier = modifier.fillMaxWidth(),
         singleLine = true,
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        isError = isError,
+        supportingText = supportingText?.let { { Text(it) } },
+        visualTransformation = if (isPassword) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = ZoonyRed,
             focusedLabelColor = ZoonyRed,
