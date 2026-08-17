@@ -43,6 +43,7 @@
     <string name="products_title">Products</string>
     <string name="products_error">Could not load products</string>
     <string name="retry">Retry</string>
+    <string name="products_cached_notice">Showing saved products. We will refresh when the connection is available.</string>
 
     <string name="profile_title">Profile</string>
     <string name="profile_name">Name</string>

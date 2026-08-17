@@ -10,58 +10,23 @@ object LocaleHelper {
     const val LANG_ENGLISH = "en"
     const val LANG_ARABIC = "ar"
 
-    private const val PREFS_NAME = "zoony_language"
-    private const val KEY_LANGUAGE = "language"
+    private const val LANGUAGE_CHANGED =
+        "language_changed"
 
     fun currentLanguage(context: Context): String {
-        val prefs = context.getSharedPreferences(
-            PREFS_NAME,
-            Context.MODE_PRIVATE
-        )
-
-        return prefs.getString(KEY_LANGUAGE, LANG_ENGLISH)
-            ?: LANG_ENGLISH
-    }
-
-    fun setLanguage(context: Context, language: String) {
-        // English is the default language. Arabic is only selected after
-        // the user explicitly presses the AR button.
-        val selectedLanguage = if (language == LANG_ARABIC) LANG_ARABIC else LANG_ENGLISH
-
-        context.getSharedPreferences(
-            PREFS_NAME,
-            Context.MODE_PRIVATE
-        )
-            .edit()
-            .putString(KEY_LANGUAGE, selectedLanguage)
-            .apply()
-
-        applyLanguage(context, selectedLanguage)
-
-        if (context is Activity) {
-            context.recreate()
-        }
-    }
-
-    fun toggleLanguage(context: Context) {
-        val current = currentLanguage(context)
-
-        val newLanguage =
-            if (current == LANG_ARABIC) {
-                LANG_ENGLISH
-            } else {
-                LANG_ARABIC
+        return context.resources.configuration
+            .locales[0]
+            .language
+            .let {
+                if (it == LANG_ARABIC) {
+                    LANG_ARABIC
+                } else {
+                    LANG_ENGLISH
+                }
             }
-
-        setLanguage(context, newLanguage)
     }
 
-    fun applySavedLanguage(context: Context) {
-        val language = currentLanguage(context)
-        applyLanguage(context, language)
-    }
-
-    private fun applyLanguage(
+    fun setLanguage(
         context: Context,
         language: String
     ) {
@@ -69,9 +34,8 @@ object LocaleHelper {
 
         Locale.setDefault(locale)
 
-        val configuration = Configuration(
-            context.resources.configuration
-        )
+        val configuration =
+            Configuration(context.resources.configuration)
 
         configuration.setLocale(locale)
         configuration.setLayoutDirection(locale)
@@ -79,6 +43,45 @@ object LocaleHelper {
         context.resources.updateConfiguration(
             configuration,
             context.resources.displayMetrics
+        )
+
+        if (context is Activity) {
+
+            // Tell MainActivity that this recreation
+            // came from the language button.
+            context.intent.putExtra(
+                LANGUAGE_CHANGED,
+                true
+            )
+
+            context.recreate()
+        }
+    }
+
+    fun toggleLanguage(context: Context) {
+
+        val current =
+            currentLanguage(context)
+
+        if (current == LANG_ARABIC) {
+            setLanguage(
+                context,
+                LANG_ENGLISH
+            )
+        } else {
+            setLanguage(
+                context,
+                LANG_ARABIC
+            )
+        }
+    }
+
+    fun shouldKeepCurrentLanguage(
+        intent: android.content.Intent
+    ): Boolean {
+        return intent.getBooleanExtra(
+            LANGUAGE_CHANGED,
+            false
         )
     }
 }

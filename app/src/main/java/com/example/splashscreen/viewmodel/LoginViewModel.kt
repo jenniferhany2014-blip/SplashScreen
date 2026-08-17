@@ -1,18 +1,37 @@
 package com.example.splashscreen.viewmodel
 
-import android.app.Application
 import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splashscreen.SessionManager
+import com.example.splashscreen.error.ErrorMapper
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val sessionManager = SessionManager(application)
+/**
+ * ViewModel responsible for the login screen.
+ *
+ * Libraries:
+ * - AndroidX Lifecycle ViewModel
+ * - Kotlin Coroutines
+ * - Jetpack Compose State
+ * - Dagger Hilt
+ *
+ * Responsibility:
+ * - Stores login form state.
+ * - Validates user input.
+ * - Validates credentials through SessionManager.
+ * - Handles application errors.
+ * - Exposes loading and error state to the UI.
+ */
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
     var email by mutableStateOf("")
         private set
@@ -26,47 +45,99 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     var isLoading by mutableStateOf(false)
         private set
 
-    fun onEmailChange(value: String) {
+    /**
+     * Updates the email field.
+     *
+     * @param value new email value.
+     */
+    fun onEmailChange(
+        value: String
+    ) {
         email = value
         errorMessage = ""
     }
 
-    fun onPasswordChange(value: String) {
+    /**
+     * Updates the password field.
+     *
+     * @param value new password value.
+     */
+    fun onPasswordChange(
+        value: String
+    ) {
         password = value
         errorMessage = ""
     }
 
-    fun login(onSuccess: () -> Unit) {
-        // Login only checks that both fields are filled and the email
-        // has a normal email format. It does NOT check the saved account
-        // and it does NOT apply password requirements.
+    /**
+     * Validates the login form and checks stored credentials.
+     *
+     * Validation errors are handled directly because they are
+     * user-input problems rather than technical exceptions.
+     *
+     * Unexpected/data errors are converted using ErrorMapper.
+     *
+     * @param onSuccess called after successful authentication.
+     */
+    fun login(
+        onSuccess: () -> Unit
+    ) {
+
         if (email.isBlank()) {
             errorMessage = "Please enter your email."
             return
         }
 
-        if (!Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-            errorMessage = "Please enter a valid email address."
+        if (
+            !Patterns.EMAIL_ADDRESS
+                .matcher(email.trim())
+                .matches()
+        ) {
+            errorMessage =
+                "Please enter a valid email address."
             return
         }
 
         if (password.isBlank()) {
-            errorMessage = "Please enter your password."
+            errorMessage =
+                "Please enter your password."
             return
         }
 
         viewModelScope.launch {
+
             isLoading = true
             errorMessage = ""
 
             try {
-                // Testing mode: any non-empty password is accepted.
-                // The login session is saved so the rest of the app works.
+
+                val valid =
+                    sessionManager.validateCredentials(
+                        email = email.trim(),
+                        password = password
+                    )
+
+                if (!valid) {
+                    errorMessage =
+                        "Incorrect email or password."
+
+                    return@launch
+                }
+
                 sessionManager.setLoggedIn(true)
+
                 onSuccess()
+
             } catch (e: Exception) {
-                errorMessage = "Unable to sign in. Please try again."
+
+                val appError =
+                    ErrorMapper.map(e)
+
+                errorMessage =
+                    ErrorMapper.userMessage(appError)
+
             } finally {
+
                 isLoading = false
             }
         }

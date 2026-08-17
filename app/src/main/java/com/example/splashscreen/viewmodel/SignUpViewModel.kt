@@ -1,18 +1,36 @@
 package com.example.splashscreen.viewmodel
 
-import android.app.Application
 import android.util.Patterns
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splashscreen.SessionManager
+import com.example.splashscreen.error.ErrorMapper
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SignUpViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val sessionManager = SessionManager(application)
+/**
+ * ViewModel responsible for account registration.
+ *
+ * Libraries:
+ * - AndroidX Lifecycle ViewModel
+ * - Jetpack Compose State
+ * - Kotlin Coroutines
+ * - Dagger Hilt
+ *
+ * Responsibility:
+ * - Stores registration form state.
+ * - Validates name, email, and password.
+ * - Saves the account through SessionManager.
+ * - Converts technical exceptions into user-friendly messages.
+ */
+@HiltViewModel
+class SignUpViewModel @Inject constructor(
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
     var name by mutableStateOf("")
         private set
@@ -36,95 +54,162 @@ class SignUpViewModel(application: Application) : AndroidViewModel(application) 
         get() = password.length >= 8
 
     val hasUpperCase: Boolean
-        get() = password.any { it.isUpperCase() }
+        get() = password.any {
+            it.isUpperCase()
+        }
 
     val hasLowerCase: Boolean
-        get() = password.any { it.isLowerCase() }
+        get() = password.any {
+            it.isLowerCase()
+        }
 
     val hasDigit: Boolean
-        get() = password.any { it.isDigit() }
+        get() = password.any {
+            it.isDigit()
+        }
 
     val hasSpecialChar: Boolean
-        get() = password.any { !it.isLetterOrDigit() }
+        get() = password.any {
+            !it.isLetterOrDigit()
+        }
 
     val isPasswordValid: Boolean
-        get() = hasMinLength &&
-                hasUpperCase &&
-                hasLowerCase &&
-                hasDigit &&
-                hasSpecialChar
+        get() =
+            hasMinLength &&
+                    hasUpperCase &&
+                    hasLowerCase &&
+                    hasDigit &&
+                    hasSpecialChar
 
     val isEmailValid: Boolean
-        get() = email.isNotBlank() &&
-                Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()
+        get() =
+            email.isNotBlank() &&
+                    Patterns.EMAIL_ADDRESS
+                        .matcher(email.trim())
+                        .matches()
 
     val isNameValid: Boolean
         get() = name.trim().length >= 2
 
     val passwordsMatch: Boolean
-        get() = password.isNotEmpty() &&
-                password == confirmPassword
+        get() =
+            password.isNotEmpty() &&
+                    password == confirmPassword
 
-    fun onNameChange(value: String) {
+    /**
+     * Updates the name field.
+     *
+     * @param value new name value.
+     */
+    fun onNameChange(
+        value: String
+    ) {
         name = value
         errorMessage = ""
     }
 
-    fun onEmailChange(value: String) {
+    /**
+     * Updates the email field.
+     *
+     * @param value new email value.
+     */
+    fun onEmailChange(
+        value: String
+    ) {
         email = value
         errorMessage = ""
     }
 
-    fun onPasswordChange(value: String) {
+    /**
+     * Updates the password field.
+     *
+     * @param value new password value.
+     */
+    fun onPasswordChange(
+        value: String
+    ) {
         password = value
         errorMessage = ""
     }
 
-    fun onConfirmPasswordChange(value: String) {
+    /**
+     * Updates the confirmation password field.
+     *
+     * @param value new confirmation password value.
+     */
+    fun onConfirmPasswordChange(
+        value: String
+    ) {
         confirmPassword = value
         errorMessage = ""
     }
 
-    fun signUp(onSuccess: () -> Unit) {
+    /**
+     * Validates the registration form and saves the account.
+     *
+     * Validation errors are handled directly because they are
+     * user-input problems.
+     *
+     * Technical exceptions are converted through ErrorMapper.
+     *
+     * @param onSuccess called after successful registration.
+     */
+    fun signUp(
+        onSuccess: () -> Unit
+    ) {
+
         when {
+
             !isNameValid -> {
-                errorMessage = "Please enter your name."
+                errorMessage =
+                    "Please enter your name."
                 return
             }
 
             !isEmailValid -> {
-                errorMessage = "Please enter a valid email address."
+                errorMessage =
+                    "Please enter a valid email address."
                 return
             }
 
             !isPasswordValid -> {
-                errorMessage = "Password does not meet all requirements."
+                errorMessage =
+                    "Password does not meet all requirements."
                 return
             }
 
             !passwordsMatch -> {
-                errorMessage = "Passwords do not match."
+                errorMessage =
+                    "Passwords do not match."
                 return
             }
         }
 
         viewModelScope.launch {
+
             isLoading = true
             errorMessage = ""
 
             try {
-                // Do not reject an existing account during testing.
-                // The newly entered data becomes the saved account.
+
                 sessionManager.saveAccount(
-                    name = name,
-                    email = email,
+                    name = name.trim(),
+                    email = email.trim(),
                     password = password
                 )
 
                 onSuccess()
+
             } catch (e: Exception) {
-                errorMessage = "Unable to create account. Please try again."
+
+                val appError =
+                    ErrorMapper.map(e)
+
+                errorMessage =
+                    ErrorMapper.userMessage(appError)
+
             } finally {
+
                 isLoading = false
             }
         }

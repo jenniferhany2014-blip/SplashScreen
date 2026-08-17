@@ -29,18 +29,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.splashscreen.viewmodel.ProductDetailUiState
 import com.example.splashscreen.viewmodel.ProductDetailViewModel
-
+import com.example.splashscreen.error.ErrorMapper
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     navController: NavController,
     productId: Int,
-    viewModel: ProductDetailViewModel = viewModel()
+    viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -79,7 +79,10 @@ fun ProductDetailScreen(
                     ) {
                         Text(text = "Couldn't load this product")
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = state.message, fontSize = 13.sp)
+                        Text(
+                            text = ErrorMapper.userMessage(state.error),
+                            fontSize = 13.sp
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.fetchProduct(productId) }) {
                             Text("Retry")

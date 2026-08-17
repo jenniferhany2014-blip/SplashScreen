@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.splashscreen.model.DrawerScreen
 import com.example.splashscreen.ui.theme.ZoonyRed
@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Home(
     navController: NavController,
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     // Get Context here, inside the Composable.
     // Then use this variable in the button instead of

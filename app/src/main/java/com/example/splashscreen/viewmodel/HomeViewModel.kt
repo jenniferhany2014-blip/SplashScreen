@@ -1,29 +1,58 @@
 package com.example.splashscreen.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.splashscreen.SessionManager
 import com.example.splashscreen.model.DrawerScreen
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel(application: Application) : AndroidViewModel(application) {
+/**
+ * ViewModel responsible for Home screen state and navigation drawer state.
+ *
+ * Libraries:
+ * - AndroidX Lifecycle ViewModel
+ * - Jetpack Compose
+ * - Kotlin Coroutines
+ * - Dagger Hilt
+ */
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val sessionManager: SessionManager
+) : ViewModel() {
 
-    private val sessionManager = SessionManager(application)
-
-    var selectedScreen by mutableStateOf(DrawerScreen.HOME)
+    var selectedScreen by mutableStateOf(
+        DrawerScreen.HOME
+    )
         private set
 
-    fun selectScreen(screen: DrawerScreen) {
+    /**
+     * Changes the currently selected drawer screen.
+     *
+     * @param screen screen selected by the user.
+     */
+    fun selectScreen(
+        screen: DrawerScreen
+    ) {
         selectedScreen = screen
     }
 
-    fun logout(onLoggedOut: () -> Unit) {
+    /**
+     * Logs the user out and invokes the supplied callback.
+     *
+     * @param onLoggedOut called after logout completes.
+     */
+    fun logout(
+        onLoggedOut: () -> Unit
+    ) {
         viewModelScope.launch {
+
             sessionManager.setLoggedIn(false)
+
             onLoggedOut()
         }
     }

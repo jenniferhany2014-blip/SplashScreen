@@ -33,6 +33,7 @@
     <string name="products_title">المنتجات</string>
     <string name="products_error">تعذر تحميل المنتجات</string>
     <string name="retry">إعادة المحاولة</string>
+    <string name="products_cached_notice">يتم عرض المنتجات المحفوظة. سيتم تحديثها عند توفر الاتصال.</string>
     <string name="profile_title">الملف الشخصي</string>
     <string name="profile_name">الاسم</string>
     <string name="profile_email">البريد الإلكتروني</string>

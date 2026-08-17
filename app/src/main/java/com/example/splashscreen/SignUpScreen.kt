@@ -12,7 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.splashscreen.ui.components.ZoonyTextField
 import com.example.splashscreen.ui.theme.ZoonyBlack
@@ -23,7 +23,7 @@ import com.example.splashscreen.viewmodel.SignUpViewModel
 @Composable
 fun SignUpScreen(
     navController: NavController,
-    viewModel: SignUpViewModel = viewModel()
+    viewModel: SignUpViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var showValidation by remember { mutableStateOf(false) }

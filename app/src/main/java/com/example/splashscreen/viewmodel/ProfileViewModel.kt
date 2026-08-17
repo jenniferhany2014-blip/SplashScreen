@@ -1,9 +1,24 @@
 package com.example.splashscreen
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-    private val sessionManager = SessionManager(application)
+/**
+ * ViewModel responsible for exposing the current user profile.
+ *
+ * Libraries:
+ * - AndroidX Lifecycle ViewModel
+ * - Kotlin Flow through SessionManager
+ * - Dagger Hilt
+ */
+@HiltViewModel
+class ProfileViewModel @Inject constructor(
+    private val sessionManager: SessionManager
+) : ViewModel() {
+
+    /**
+     * Flow containing the currently stored user account.
+     */
     val user = sessionManager.user
 }

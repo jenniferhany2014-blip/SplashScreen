@@ -1,5 +1,5 @@
 package com.example.splashscreen
-
+import com.example.splashscreen.error.ErrorMapper
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,7 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.splashscreen.viewmodel.ProductListUiState
@@ -29,7 +29,7 @@ fun ProductListScreen(
     modifier: Modifier = Modifier,
     showTopBar: Boolean = true,
     initialQuery: String = "",
-    viewModel: ProductListViewModel = viewModel()
+    viewModel: ProductListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -66,10 +66,9 @@ fun ProductListScreen(
                         Spacer(Modifier.height(8.dp))
 
                         Text(
-                            text = state.message,
+                            text = ErrorMapper.userMessage(state.error),
                             fontSize = 13.sp
                         )
-
                         Spacer(Modifier.height(16.dp))
 
                         Button(
@@ -87,71 +86,87 @@ fun ProductListScreen(
                 }
 
                 is ProductListUiState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(
-                            items = state.products,
-                            key = { it.id }
-                        ) { product ->
+                    Column(modifier = Modifier.fillMaxSize()) {
 
-                            Card(
+                        if (state.fromCache && initialQuery.isBlank()) {
+                            Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    // IMPORTANT:
-                                    // This route must exactly match the
-                                    // route declared in MainActivity.
-                                    navController.navigate(
-                                        "product_detail/${product.id}"
-                                    )
-                                }
+                                color = MaterialTheme.colorScheme.surfaceVariant
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                Text(
+                                    text = stringResource(R.string.products_cached_notice),
+                                    modifier = Modifier.padding(
+                                        horizontal = 16.dp,
+                                        vertical = 8.dp
+                                    ),
+                                    fontSize = 13.sp
+                                )
+                            }
+                        }
+
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(
+                                items = state.products,
+                                key = { it.id }
+                            ) { product ->
+
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        navController.navigate(
+                                            "product_detail/${product.id}"
+                                        )
+                                    }
                                 ) {
-                                    AsyncImage(
-                                        model = product.thumbnail,
-                                        contentDescription = product.title,
-                                        contentScale = ContentScale.Crop,
+                                    Row(
                                         modifier = Modifier
-                                            .size(72.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                    )
-
-                                    Spacer(Modifier.width(12.dp))
-
-                                    Column(
-                                        modifier = Modifier.weight(1f)
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = product.title,
-                                            fontSize = 16.sp
+                                        AsyncImage(
+                                            model = product.thumbnail,
+                                            contentDescription = product.title,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .size(72.dp)
+                                                .clip(RoundedCornerShape(8.dp))
                                         )
 
-                                        Spacer(Modifier.height(4.dp))
+                                        Spacer(Modifier.width(12.dp))
+
+                                        Column(
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Text(
+                                                text = product.title,
+                                                fontSize = 16.sp
+                                            )
+
+                                            Spacer(Modifier.height(4.dp))
+
+                                            Text(
+                                                text = product.category,
+                                                fontSize = 13.sp
+                                            )
+
+                                            Spacer(Modifier.height(4.dp))
+
+                                            Text(
+                                                text = "$${product.price}",
+                                                fontSize = 13.sp
+                                            )
+                                        }
 
                                         Text(
-                                            text = product.category,
-                                            fontSize = 13.sp
-                                        )
-
-                                        Spacer(Modifier.height(4.dp))
-
-                                        Text(
-                                            text = "$${product.price}",
+                                            text = "★ ${product.rating}",
                                             fontSize = 13.sp
                                         )
                                     }
-
-                                    Text(
-                                        text = "★ ${product.rating}",
-                                        fontSize = 13.sp
-                                    )
                                 }
                             }
                         }
