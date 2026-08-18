@@ -57,6 +57,15 @@
     <string name="language_switch_ar">AR</string>
     <string name="language_switch_en">EN</string>
 
+    <string name="settings_favorites">Favorites</string>
+    <string name="settings_favorites_description">View only your favorite products</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="no_favorites">No favorite products yet</string>
+    <string name="add_favorite">Add to favorites</string>
+    <string name="remove_favorite">Remove from favorites</string>
+    <string name="product_details_title">Product Details</string>
+    <string name="product_details_error">Couldnt load this product</string>
+    <string name="back">Back</string>
     <string name="settings_theme">Theme</string>
     <string name="theme_system">System Default</string>
     <string name="theme_light">Light</string>

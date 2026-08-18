@@ -109,6 +109,13 @@ fun AppNavigation() {
             )
         }
 
+        composable("favorites") {
+            ProductListScreen(
+                navController = navController,
+                favoritesOnly = true
+            )
+        }
+
         composable(
             route = "product_detail/{productId}",
             arguments = listOf(

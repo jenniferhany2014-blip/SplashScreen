@@ -1,9 +1,12 @@
 package com.example.splashscreen
-import com.example.splashscreen.error.ErrorMapper
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.splashscreen.error.ErrorMapper
 import com.example.splashscreen.viewmodel.ProductListUiState
 import com.example.splashscreen.viewmodel.ProductListViewModel
 
@@ -29,15 +33,17 @@ fun ProductListScreen(
     modifier: Modifier = Modifier,
     showTopBar: Boolean = true,
     initialQuery: String = "",
+    favoritesOnly: Boolean = false,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val favoriteIds by viewModel.favoriteIds.collectAsStateWithLifecycle()
 
-    LaunchedEffect(initialQuery) {
-        if (initialQuery.isNotBlank()) {
-            viewModel.search(initialQuery)
-        } else {
-            viewModel.fetchProducts()
+    LaunchedEffect(initialQuery, favoritesOnly) {
+        when {
+            favoritesOnly -> viewModel.fetchFavorites()
+            initialQuery.isNotBlank() -> viewModel.search(initialQuery)
+            else -> viewModel.fetchProducts()
         }
     }
 
@@ -62,21 +68,18 @@ fun ProductListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(stringResource(R.string.products_error))
-
                         Spacer(Modifier.height(8.dp))
-
                         Text(
                             text = ErrorMapper.userMessage(state.error),
                             fontSize = 13.sp
                         )
                         Spacer(Modifier.height(16.dp))
-
                         Button(
                             onClick = {
-                                if (initialQuery.isNotBlank()) {
-                                    viewModel.search(initialQuery)
-                                } else {
-                                    viewModel.fetchProducts()
+                                when {
+                                    favoritesOnly -> viewModel.fetchFavorites()
+                                    initialQuery.isNotBlank() -> viewModel.search(initialQuery)
+                                    else -> viewModel.fetchProducts()
                                 }
                             }
                         ) {
@@ -86,9 +89,15 @@ fun ProductListScreen(
                 }
 
                 is ProductListUiState.Success -> {
-                    Column(modifier = Modifier.fillMaxSize()) {
+                    val visibleProducts =
+                        if (favoritesOnly) {
+                            state.products.filter { it.id in favoriteIds }
+                        } else {
+                            state.products
+                        }
 
-                        if (state.fromCache && initialQuery.isBlank()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (state.fromCache && !favoritesOnly && initialQuery.isBlank()) {
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 color = MaterialTheme.colorScheme.surfaceVariant
@@ -104,68 +113,106 @@ fun ProductListScreen(
                             }
                         }
 
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(
-                                items = state.products,
-                                key = { it.id }
-                            ) { product ->
-
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        navController.navigate(
-                                            "product_detail/${product.id}"
-                                        )
-                                    }
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        AsyncImage(
-                                            model = product.thumbnail,
-                                            contentDescription = product.title,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier
-                                                .size(72.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                        )
-
-                                        Spacer(Modifier.width(12.dp))
-
-                                        Column(
-                                            modifier = Modifier.weight(1f)
-                                        ) {
-                                            Text(
-                                                text = product.title,
-                                                fontSize = 16.sp
-                                            )
-
-                                            Spacer(Modifier.height(4.dp))
-
-                                            Text(
-                                                text = product.category,
-                                                fontSize = 13.sp
-                                            )
-
-                                            Spacer(Modifier.height(4.dp))
-
-                                            Text(
-                                                text = "$${product.price}",
-                                                fontSize = 13.sp
+                        if (favoritesOnly && visibleProducts.isEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FavoriteBorder,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(56.dp)
+                                )
+                                Spacer(Modifier.height(12.dp))
+                                Text(
+                                    text = stringResource(R.string.no_favorites),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(
+                                    items = visibleProducts,
+                                    key = { it.id }
+                                ) { product ->
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = {
+                                            navController.navigate(
+                                                "product_detail/${product.id}"
                                             )
                                         }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            AsyncImage(
+                                                model = product.thumbnail,
+                                                contentDescription = product.title,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier
+                                                    .size(72.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                            )
 
-                                        Text(
-                                            text = "★ ${product.rating}",
-                                            fontSize = 13.sp
-                                        )
+                                            Spacer(Modifier.width(12.dp))
+
+                                            Column(
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Text(
+                                                    text = product.title,
+                                                    fontSize = 16.sp
+                                                )
+                                                Spacer(Modifier.height(4.dp))
+                                                Text(
+                                                    text = product.category,
+                                                    fontSize = 13.sp
+                                                )
+                                                Spacer(Modifier.height(4.dp))
+                                                Text(
+                                                    text = "$${product.price}",
+                                                    fontSize = 13.sp
+                                                )
+                                            }
+
+                                            Text(
+                                                text = "★ ${product.rating}",
+                                                fontSize = 13.sp
+                                            )
+
+                                            IconButton(
+                                                onClick = {
+                                                    viewModel.toggleFavorite(product.id)
+                                                }
+                                            ) {
+                                                Icon(
+                                                    imageVector =
+                                                        if (product.id in favoriteIds) {
+                                                            Icons.Default.Favorite
+                                                        } else {
+                                                            Icons.Default.FavoriteBorder
+                                                        },
+                                                    contentDescription =
+                                                        if (product.id in favoriteIds) {
+                                                            stringResource(R.string.remove_favorite)
+                                                        } else {
+                                                            stringResource(R.string.add_favorite)
+                                                        },
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -181,7 +228,13 @@ fun ProductListScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(stringResource(R.string.products_title))
+                        Text(
+                            if (favoritesOnly) {
+                                stringResource(R.string.favorites_title)
+                            } else {
+                                stringResource(R.string.products_title)
+                            }
+                        )
                     }
                 )
             }

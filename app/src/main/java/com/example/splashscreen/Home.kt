@@ -213,7 +213,8 @@ fun Home(
                 DrawerScreen.SETTINGS -> Settings(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
+                        .padding(padding),
+                    navController = navController
                 )
             }
         }

@@ -44,6 +44,15 @@
     <string name="language_arabic">العربية</string>
     <string name="language_switch_ar">AR</string>
     <string name="language_switch_en">EN</string>
+    <string name="settings_favorites">المفضلة</string>
+    <string name="settings_favorites_description">عرض المنتجات المفضلة فقط</string>
+    <string name="favorites_title">المفضلة</string>
+    <string name="no_favorites">لا توجد منتجات مفضلة بعد</string>
+    <string name="add_favorite">إضافة للمفضلة</string>
+    <string name="remove_favorite">إزالة من المفضلة</string>
+    <string name="product_details_title">تفاصيل المنتج</string>
+    <string name="product_details_error">تعذر تحميل المنتج</string>
+    <string name="back">رجوع</string>
     <string name="settings_theme">المظهر</string>
     <string name="theme_system">إعدادات النظام</string>
     <string name="theme_light">فاتح</string>
